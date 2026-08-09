@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -32,8 +35,21 @@ fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.
     val rates by viewModel.rates.collectAsState()
     var showEditor by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Kharji 💸") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Kharji 💸") },
+                actions = {
+                    if (entries.isNotEmpty()) {
+                        IconButton(onClick = { shareCsv(context, entries, categories) }) {
+                            Icon(Icons.Default.Share, contentDescription = "Export CSV")
+                        }
+                    }
+                },
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = { showEditor = true }) {
                 Icon(Icons.Default.Add, contentDescription = "Add expense")
