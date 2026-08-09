@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import io.github.meko123456.kharji.data.Category
 import io.github.meko123456.kharji.data.Entry
 import io.github.meko123456.kharji.data.EntrySource
+import io.github.meko123456.kharji.data.FxRate
 import io.github.meko123456.kharji.data.KharjiDao
 import io.github.meko123456.kharji.data.KharjiDatabase
 import io.github.meko123456.kharji.domain.KCurrency
@@ -26,6 +27,9 @@ class KharjiViewModel(private val dao: KharjiDao) : ViewModel() {
 
     val categories: StateFlow<List<Category>> =
         dao.observeCategories().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val rates: StateFlow<List<FxRate>> =
+        dao.observeRates().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     init {
         viewModelScope.launch {

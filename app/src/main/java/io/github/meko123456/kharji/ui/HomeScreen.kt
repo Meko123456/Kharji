@@ -29,6 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.Factory)) {
     val entries by viewModel.entries.collectAsState()
     val categories by viewModel.categories.collectAsState()
+    val rates by viewModel.rates.collectAsState()
     var showEditor by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -56,6 +57,7 @@ fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.
             EntryList(
                 entries = entries,
                 categories = categories,
+                rates = rates,
                 onDelete = { viewModel.deleteEntry(it) },
                 modifier = Modifier.padding(innerPadding),
             )

@@ -21,6 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.meko123456.kharji.data.Category
 import io.github.meko123456.kharji.data.Entry
+import io.github.meko123456.kharji.data.FxRate
+import io.github.meko123456.kharji.domain.CurrencyConverter
+import io.github.meko123456.kharji.domain.FxQuote
 import io.github.meko123456.kharji.domain.KCurrency
 import io.github.meko123456.kharji.domain.Money
 import java.time.LocalDate
@@ -28,12 +31,38 @@ import java.time.format.DateTimeFormatter
 
 private val DayFormat = DateTimeFormatter.ofPattern("EEE, d MMM")
 
+/**
+ * Grand total of [totals] in GEL via cached [rates].
+ * Returns null when a needed rate is missing; second value marks staleness.
+ */
+internal fun convertedTotal(
+    totals: Map<String, Money>,
+    rates: List<FxRate>,
+    todayEpochDay: Long,
+): Pair<Money, Boolean>? {
+    var sumMinor = 0L
+    var stale = false
+    for ((code, money) in totals) {
+        if (code == KCurrency.GEL.code) {
+            sumMinor += money.minor
+            continue
+        }
+        val rate = rates.firstOrNull { it.fromCode == code && it.toCode == KCurrency.GEL.code }
+            ?: return null
+        val quote = FxQuote(KCurrency.valueOf(code), KCurrency.GEL, rate.rate, rate.asOfEpochDay)
+        if (quote.isStale(todayEpochDay)) stale = true
+        sumMinor += CurrencyConverter.convert(money, quote).minor
+    }
+    return Money(sumMinor, KCurrency.GEL) to stale
+}
+
 /** Current-month totals per currency + day-grouped entry list. Long-press deletes. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EntryList(
     entries: List<Entry>,
     categories: List<Category>,
+    rates: List<FxRate>,
     onDelete: (Entry) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -60,6 +89,17 @@ fun EntryList(
                         style = MaterialTheme.typography.headlineSmall,
                         modifier = Modifier.padding(top = 4.dp),
                     )
+                    if (monthTotals.size > 1) {
+                        val today = LocalDate.now().toEpochDay()
+                        convertedTotal(monthTotals, rates, today)?.let { (total, stale) ->
+                            Text(
+                                text = "≈ ${total.format()} total" + if (stale) "  (rates stale)" else "",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 2.dp),
+                            )
+                        }
+                    }
                 }
             }
         }
