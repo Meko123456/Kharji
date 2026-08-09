@@ -3,6 +3,7 @@ package io.github.meko123456.kharji.debug
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import io.github.meko123456.kharji.data.Category
 import io.github.meko123456.kharji.data.Entry
 import io.github.meko123456.kharji.data.EntrySource
 import io.github.meko123456.kharji.data.FxRate
@@ -21,6 +22,11 @@ class SeedDemoReceiver : BroadcastReceiver() {
             try {
                 val dao = KharjiDatabase.get(context).dao()
                 val today = LocalDate.now().toEpochDay()
+                // Don't depend on the app having seeded categories yet.
+                if (dao.categoryCount() == 0) {
+                    listOf("Food" to "🍔", "Groceries" to "🛒", "Transport" to "🚕", "Bills" to "🧾", "Fun" to "🎉", "Other" to "💸")
+                        .forEach { (name, emoji) -> dao.insert(Category(name = name, emoji = emoji)) }
+                }
                 val categories = dao.observeCategoriesOnce()
                 fun cat(name: String) = categories.firstOrNull { it.name == name }?.id
 

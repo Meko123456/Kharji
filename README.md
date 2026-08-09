@@ -1,7 +1,14 @@
 # Kharji 💸
 
+[![CI](https://github.com/Meko123456/Kharji/actions/workflows/ci.yml/badge.svg)](https://github.com/Meko123456/Kharji/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 **ხარჯი** (*kharji* — Georgian for "expense") — a multi-currency expense tracker
 built for a life lived between two currencies.
+
+<p align="center">
+  <img src="docs/screenshot-home.png" width="320" alt="Home: multi-currency month summary with converted total, day-grouped entries" />
+</p>
 
 Born from a real problem: earning and spending across **GEL and AED** means no
 mainstream tracker fits. Kharji does three things most don't:
@@ -13,14 +20,19 @@ mainstream tracker fits. Kharji does three things most don't:
   convert via cached FX rates with a full offline fallback.
 - 📤 **Your data is yours** — one-tap CSV export, everything in Room, no cloud.
 
-## Planned features
+## Working today
 
-- Manual entries with categories, notes, and quick-add favorites
+- ✅ Manual entries: quick-add dialog, GEL/AED/USD/EUR, category chips, merchant/notes
+- ✅ Day-grouped list, per-currency monthly totals, **converted ≈GEL grand total**
+- ✅ FX rates auto-refreshed daily (open.er-api.com), cached in Room, offline
+  fallback with stale-rate indicator
+- ✅ CSV export via share sheet (RFC-4180-safe, tested)
+- ✅ Money core: integer minor-unit arithmetic — no floating-point money, tested
+
+## Coming next
+
 - TBC / BoG SMS notification parsing (opt-in, on-device only — messages never leave the phone)
-- FX rates cached daily; stale-rate indicator when offline
-- Monthly overview per currency + converted total
-- CSV export via share sheet
-- Receipt scanning (CameraX + ML Kit) — later milestone, tracked in issues
+- Receipt scanning (CameraX + ML Kit) — tracked in issues
 
 ## Tech stack
 
@@ -29,7 +41,7 @@ Ktor (FX rates) · WorkManager · CameraX + ML Kit (later)
 
 ## Status
 
-🚧 Day 1 — README-first. See [issues](../../issues) for the full roadmap.
+🚧 Active development. See [issues](../../issues) for the roadmap.
 
 ## Privacy
 
