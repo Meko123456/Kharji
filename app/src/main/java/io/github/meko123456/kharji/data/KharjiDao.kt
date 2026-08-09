@@ -39,6 +39,9 @@ interface KharjiDao {
     @Query("SELECT COUNT(*) FROM categories")
     suspend fun categoryCount(): Int
 
+    @Query("SELECT * FROM categories ORDER BY id")
+    suspend fun observeCategoriesOnce(): List<Category>
+
     // --- fx rates ---
 
     @Query("SELECT * FROM fx_rates WHERE fromCode = :from AND toCode = :to")
