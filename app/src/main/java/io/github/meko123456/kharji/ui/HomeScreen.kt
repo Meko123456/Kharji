@@ -42,6 +42,14 @@ fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.
             TopAppBar(
                 title = { Text("Kharji 💸") },
                 actions = {
+                    // Opens system settings so the user can opt in to bank-notification capture.
+                    IconButton(onClick = {
+                        context.startActivity(
+                            android.content.Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"),
+                        )
+                    }) {
+                        Text("📥", style = MaterialTheme.typography.titleMedium)
+                    }
                     if (entries.isNotEmpty()) {
                         IconButton(onClick = { shareCsv(context, entries, categories) }) {
                             Icon(Icons.Default.Share, contentDescription = "Export CSV")
