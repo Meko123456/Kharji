@@ -35,6 +35,23 @@ class KharjiViewModel(private val dao: KharjiDao) : ViewModel() {
     val pending: StateFlow<List<Entry>> =
         dao.observePending().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** Files a scanned receipt as a pending entry, reviewed like a bank capture. */
+    fun addScannedReceipt(receipt: io.github.meko123456.kharji.domain.receipt.ScannedReceipt) {
+        viewModelScope.launch {
+            dao.insert(
+                Entry(
+                    amountMinor = receipt.amountMinor,
+                    currency = receipt.currency.code,
+                    merchant = receipt.merchant,
+                    epochDay = java.time.LocalDate.now().toEpochDay(),
+                    createdAtMillis = System.currentTimeMillis(),
+                    source = EntrySource.MANUAL,
+                    pending = true,
+                ),
+            )
+        }
+    }
+
     /** Accepts a captured entry so it counts toward totals. */
     fun confirmPending(entry: Entry) {
         viewModelScope.launch { dao.update(entry.copy(pending = false)) }

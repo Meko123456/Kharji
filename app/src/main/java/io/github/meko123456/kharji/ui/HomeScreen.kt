@@ -35,6 +35,7 @@ fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.
     val categories by viewModel.categories.collectAsState()
     val rates by viewModel.rates.collectAsState()
     var showEditor by remember { mutableStateOf(false) }
+    var showScanner by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -43,6 +44,9 @@ fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.
             TopAppBar(
                 title = { Text("Kharji 💸") },
                 actions = {
+                    IconButton(onClick = { showScanner = true }) {
+                        Text("📷", style = MaterialTheme.typography.titleMedium)
+                    }
                     // Opens system settings so the user can opt in to bank-notification capture.
                     IconButton(onClick = {
                         context.startActivity(
@@ -100,6 +104,16 @@ fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.
             categories = categories,
             onSave = viewModel::addEntry,
             onDismiss = { showEditor = false },
+        )
+    }
+
+    if (showScanner) {
+        ReceiptScannerScreen(
+            onScanned = { receipt ->
+                viewModel.addScannedReceipt(receipt)
+                showScanner = false
+            },
+            onBack = { showScanner = false },
         )
     }
 }
