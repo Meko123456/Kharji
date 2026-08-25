@@ -13,7 +13,12 @@ interface KharjiDao {
 
     // --- entries ---
 
-    @Query("SELECT * FROM entries ORDER BY epochDay DESC, createdAtMillis DESC")
+    /**
+     * Confirmed entries only. Unconfirmed bank captures are surfaced separately by
+     * [observePending] so a misparse can't reach the list or the monthly totals —
+     * "confirm to count" has to be literally true.
+     */
+    @Query("SELECT * FROM entries WHERE pending = 0 ORDER BY epochDay DESC, createdAtMillis DESC")
     fun observeEntries(): Flow<List<Entry>>
 
     @Query("SELECT * FROM entries WHERE pending = 1 ORDER BY createdAtMillis DESC")
