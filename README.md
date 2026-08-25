@@ -8,7 +8,11 @@ built for a life lived between two currencies.
 
 <p align="center">
   <img src="docs/screenshot-home.png" width="320" alt="Home: multi-currency month summary with converted total, day-grouped entries" />
+  <img src="docs/screenshot-capture.png" width="320" alt="Captured bank transactions awaiting confirmation, above the multi-currency month summary" />
 </p>
+
+<p align="center"><em>Left: multi-currency totals with a converted ≈GEL grand total.
+Right: TBC/BoG transactions captured from notifications, held as pending until you confirm.</em></p>
 
 Born from a real problem: earning and spending across **GEL and AED** means no
 mainstream tracker fits. Kharji does three things most don't:
