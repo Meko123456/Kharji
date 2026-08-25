@@ -28,11 +28,18 @@ mainstream tracker fits. Kharji does three things most don't:
   fallback with stale-rate indicator
 - ✅ CSV export via share sheet (RFC-4180-safe, tested)
 - ✅ Money core: integer minor-unit arithmetic — no floating-point money, tested
+- ✅ **TBC / BoG transaction parsing** — pure-Kotlin parsers (amounts in either decimal
+  separator, currency as symbol *or* code, grouped thousands, merchant extraction),
+  exhaustively unit-tested, with an **opt-in** `NotificationListenerService` that files
+  captures as **pending** entries for you to confirm
+- ✅ Conservative by design: OTP codes, balance notices, refunds and incoming transfers
+  are never recorded as expenses
 
 ## Coming next
 
-- TBC / BoG SMS notification parsing (opt-in, on-device only — messages never leave the phone)
 - Receipt scanning (CameraX + ML Kit) — tracked in issues
+- More bank SMS fixtures as real formats are collected (parsers are pattern-based and
+  easy to extend)
 
 ## Tech stack
 
@@ -41,7 +48,8 @@ Ktor (FX rates) · WorkManager · CameraX + ML Kit (later)
 
 ## Status
 
-🚧 Active development. See [issues](../../issues) for the roadmap.
+✅ **v0.1.0** — manual entries, multi-currency totals with cached FX, CSV export, and
+opt-in bank-notification capture all working. See [issues](../../issues) for what's next.
 
 ## Privacy
 
