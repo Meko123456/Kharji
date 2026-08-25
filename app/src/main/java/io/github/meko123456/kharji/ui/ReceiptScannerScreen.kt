@@ -159,7 +159,13 @@ fun ReceiptScannerScreen(
     }
 }
 
-/** Runs on-device text recognition and hands back the recognised lines. */
+/**
+ * Runs on-device text recognition and hands back the recognised lines.
+ *
+ * [ImageProxy.getImage] is opt-in: ML Kit needs the underlying `android.media.Image`, and
+ * we honour the contract by keeping the proxy open until recognition completes.
+ */
+@androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
 private fun recognize(image: ImageProxy, onLines: (List<String>) -> Unit) {
     val media = image.image
     if (media == null) {
