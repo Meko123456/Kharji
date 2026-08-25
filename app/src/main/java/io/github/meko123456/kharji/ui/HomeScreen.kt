@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.Factory)) {
     val entries by viewModel.entries.collectAsState()
+    val pending by viewModel.pending.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val rates by viewModel.rates.collectAsState()
     var showEditor by remember { mutableStateOf(false) }
@@ -64,27 +65,33 @@ fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.
             }
         },
     ) { innerPadding ->
-        if (entries.isEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(innerPadding).padding(32.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text("No expenses yet", style = MaterialTheme.typography.headlineSmall)
-                Text(
-                    "Tap + to add your first — lari or dirham.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 8.dp),
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            PendingReview(
+                pending = pending,
+                onConfirm = { viewModel.confirmPending(it) },
+                onDiscard = { viewModel.discardPending(it) },
+            )
+            if (entries.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text("No expenses yet", style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        "Tap + to add your first — lari or dirham.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            } else {
+                EntryList(
+                    entries = entries,
+                    categories = categories,
+                    rates = rates,
+                    onDelete = { viewModel.deleteEntry(it) },
                 )
             }
-        } else {
-            EntryList(
-                entries = entries,
-                categories = categories,
-                rates = rates,
-                onDelete = { viewModel.deleteEntry(it) },
-                modifier = Modifier.padding(innerPadding),
-            )
         }
     }
 

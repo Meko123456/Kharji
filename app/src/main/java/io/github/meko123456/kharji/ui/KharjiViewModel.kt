@@ -31,6 +31,20 @@ class KharjiViewModel(private val dao: KharjiDao) : ViewModel() {
     val rates: StateFlow<List<FxRate>> =
         dao.observeRates().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** Bank captures awaiting the user's confirmation. */
+    val pending: StateFlow<List<Entry>> =
+        dao.observePending().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Accepts a captured entry so it counts toward totals. */
+    fun confirmPending(entry: Entry) {
+        viewModelScope.launch { dao.update(entry.copy(pending = false)) }
+    }
+
+    /** Rejects a captured entry (a misparse or something that isn't an expense). */
+    fun discardPending(entry: Entry) {
+        viewModelScope.launch { dao.delete(entry) }
+    }
+
     init {
         viewModelScope.launch {
             if (dao.categoryCount() == 0) {
