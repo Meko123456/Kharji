@@ -24,6 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -45,7 +47,11 @@ fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.
                 title = { Text("Kharji 💸") },
                 actions = {
                     IconButton(onClick = { showScanner = true }) {
-                        Text("📷", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "📷",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.clearAndSetSemantics { contentDescription = "Scan receipt" },
+                        )
                     }
                     // Opens system settings so the user can opt in to bank-notification capture.
                     IconButton(onClick = {
@@ -53,7 +59,11 @@ fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.
                             android.content.Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"),
                         )
                     }) {
-                        Text("📥", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "📥",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.clearAndSetSemantics { contentDescription = "Bank capture settings" },
+                        )
                     }
                     if (entries.isNotEmpty()) {
                         IconButton(onClick = { shareCsv(context, entries, categories) }) {

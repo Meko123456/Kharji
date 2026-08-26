@@ -34,6 +34,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -82,7 +84,11 @@ fun ReceiptScannerScreen(
                 navigationIcon = {
                     // material-icons-core has no Close glyph; a text ✕ matches the rest of the app.
                     IconButton(onClick = onBack) {
-                        Text("✕", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "✕",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.clearAndSetSemantics { contentDescription = "Close scanner" },
+                        )
                     }
                 },
             )
