@@ -39,16 +39,16 @@ mainstream tracker fits. Kharji does three things most don't:
 - ✅ Conservative by design: OTP codes, balance notices, refunds and incoming transfers
   are never recorded as expenses
 
-## Coming next
+## Shipped since
 
-- Receipt scanning (CameraX + ML Kit) — tracked in issues
+- Receipt scanning (CameraX + on-device ML Kit text recognition), with a pure `ReceiptParser` covered by 12 tests
 - More bank SMS fixtures as real formats are collected (parsers are pattern-based and
   easy to extend)
 
 ## Tech stack
 
 Kotlin · Jetpack Compose (Material 3) · Room · NotificationListenerService ·
-Ktor (FX rates) · WorkManager · CameraX + ML Kit (later)
+Ktor (FX rates) · WorkManager · CameraX + ML Kit
 
 ## Status
 
