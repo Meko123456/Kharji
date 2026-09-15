@@ -29,12 +29,15 @@ class BankNotificationListener : NotificationListenerService() {
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
         if (text.isBlank()) return
 
-        // The sender can appear as the notification title or the posting app's name.
-        val sender = listOf(title, sbn.packageName).firstOrNull { candidate ->
-            BankSmsParser.all.any { it.matchesSender(candidate) }
-        } ?: return
+        // Two ways a bank message arrives, and they need different strictness. The bank's own app
+        // is identified by its package name, which is exact because any app can choose a package
+        // id containing "bog". An SMS forwarded by the messaging app is identified by the title,
+        // which carries the sender id and is matched on word boundaries rather than as a substring.
+        val parser = BankSmsParser.forPackage(sbn.packageName)
+            ?: BankSmsParser.forSender(title)
+            ?: return
 
-        val tx = BankSmsParser.parse(sender, "$title $text") ?: return
+        val tx = parser.parse("$title $text") ?: return
 
         scope.launch {
             val dao = KharjiDatabase.get(applicationContext).dao()
