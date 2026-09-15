@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +43,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import io.github.meko123456.kharji.domain.receipt.ReceiptParser
 import io.github.meko123456.kharji.domain.receipt.ScannedReceipt
@@ -68,6 +70,58 @@ fun ReceiptScannerScreen(
     }
     var status by remember { mutableStateOf<String?>(null) }
     val imageCapture = remember { ImageCapture.Builder().build() }
+    val previewView = remember { PreviewView(context) }
+
+    // One recognizer for the screen rather than one per shot. The flow here is capture, read
+    // "try again, straighter", capture again, and building a client each time reloads the model
+    // on every attempt. It holds native resources, so it is closed when the screen goes away.
+    val recognizer = remember { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
+    DisposableEffect(recognizer) {
+        onDispose { recognizer.close() }
+    }
+
+    // Binding the camera is only half of it; something has to let go of it again.
+    //
+    // This screen is shown by a plain `if` in the home screen, not a navigation destination, so
+    // closing it removes the composable while the activity stays RESUMED — and CameraX keeps a
+    // binding for exactly as long as the lifecycle it was given stays started. Nothing here ever
+    // unbound, so the camera stayed open after the scanner was closed: the green camera indicator
+    // stuck on, no other app able to take the camera, and the sensor drawing power for as long as
+    // Kharji was in the foreground.
+    //
+    // The provider arrives asynchronously, which adds the other half of the problem: closing the
+    // scanner before it arrives used to bind a camera that nothing was left to unbind at all.
+    // [disposed] is read and written only on the main executor, which is also where onDispose runs.
+    if (hasPermission) {
+        DisposableEffect(lifecycleOwner, previewView) {
+            val providerFuture = ProcessCameraProvider.getInstance(context)
+            var provider: ProcessCameraProvider? = null
+            var disposed = false
+
+            providerFuture.addListener({
+                if (disposed) return@addListener
+                val resolved = runCatching { providerFuture.get() }.getOrNull() ?: return@addListener
+                provider = resolved
+                val preview = Preview.Builder().build().also {
+                    it.surfaceProvider = previewView.surfaceProvider
+                }
+                runCatching {
+                    resolved.unbindAll()
+                    resolved.bindToLifecycle(
+                        lifecycleOwner,
+                        CameraSelector.DEFAULT_BACK_CAMERA,
+                        preview,
+                        imageCapture,
+                    )
+                }
+            }, ContextCompat.getMainExecutor(context))
+
+            onDispose {
+                disposed = true
+                provider?.unbindAll()
+            }
+        }
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -97,29 +151,8 @@ fun ReceiptScannerScreen(
         Column(Modifier.fillMaxSize().padding(padding)) {
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 if (hasPermission) {
-                    AndroidView(
-                        modifier = Modifier.fillMaxSize(),
-                        factory = { ctx ->
-                            val previewView = PreviewView(ctx)
-                            val providerFuture = ProcessCameraProvider.getInstance(ctx)
-                            providerFuture.addListener({
-                                val provider = providerFuture.get()
-                                val preview = Preview.Builder().build().also {
-                                    it.surfaceProvider = previewView.surfaceProvider
-                                }
-                                runCatching {
-                                    provider.unbindAll()
-                                    provider.bindToLifecycle(
-                                        lifecycleOwner,
-                                        CameraSelector.DEFAULT_BACK_CAMERA,
-                                        preview,
-                                        imageCapture,
-                                    )
-                                }
-                            }, ContextCompat.getMainExecutor(ctx))
-                            previewView
-                        },
-                    )
+                    // Binding lives in the DisposableEffect above, so it has somewhere to be undone.
+                    AndroidView(modifier = Modifier.fillMaxSize(), factory = { previewView })
                 } else {
                     Text(
                         "Camera permission is needed to scan receipts.",
@@ -143,7 +176,7 @@ fun ReceiptScannerScreen(
                             ContextCompat.getMainExecutor(context),
                             object : ImageCapture.OnImageCapturedCallback() {
                                 override fun onCaptureSuccess(image: ImageProxy) {
-                                    recognize(image) { lines ->
+                                    recognize(recognizer, image) { lines ->
                                         val receipt = ReceiptParser.parse(lines)
                                         if (receipt == null) {
                                             status = "Couldn't read a total — try again, straighter."
@@ -172,7 +205,7 @@ fun ReceiptScannerScreen(
  * we honour the contract by keeping the proxy open until recognition completes.
  */
 @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
-private fun recognize(image: ImageProxy, onLines: (List<String>) -> Unit) {
+private fun recognize(recognizer: TextRecognizer, image: ImageProxy, onLines: (List<String>) -> Unit) {
     val media = image.image
     if (media == null) {
         image.close()
@@ -180,8 +213,7 @@ private fun recognize(image: ImageProxy, onLines: (List<String>) -> Unit) {
         return
     }
     val input = InputImage.fromMediaImage(media, image.imageInfo.rotationDegrees)
-    TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-        .process(input)
+    recognizer.process(input)
         .addOnSuccessListener { text ->
             onLines(text.textBlocks.flatMap { block -> block.lines.map { it.text } })
         }
