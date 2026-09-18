@@ -9,7 +9,7 @@ ksp = "2.3.11"
 ktor = "3.4.3"
 kotlinxSerialization = "1.9.0"
 work = "2.11.2"
-camerax = "1.4.2"
+camerax = "1.6.2"
 mlkitText = "16.0.1"
 junit = "4.13.2"
 
