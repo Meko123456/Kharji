@@ -20,8 +20,14 @@ object AmountParser {
 
     private val codes = KCurrency.entries.associateBy { it.code }
 
-    /** A number like 12.50, 1,234.56, 1 234,56 — captured as group 1. */
-    private const val NUMBER = "(\\d{1,3}(?:[ ,.]\\d{3})*(?:[.,]\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?)"
+    /**
+     * A number like 12.50, 1,234.56, 1 234,56 or 1299.00, captured as group 1.
+     *
+     * It never ends just before another digit. Without that, the grouped form matched the first
+     * three digits of an ungrouped 1299.00 and stopped there: nothing has to follow the number
+     * when the currency comes first, so "USD 1299.00" read as USD 129.00.
+     */
+    private const val NUMBER = "(\\d{1,3}(?:[ ,.]\\d{3})*(?:[.,]\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?)(?!\\d)"
 
     // "12.50 GEL" / "12.50GEL"
     private val amountThenCode = Regex("$NUMBER\\s*([A-Z]{3})")

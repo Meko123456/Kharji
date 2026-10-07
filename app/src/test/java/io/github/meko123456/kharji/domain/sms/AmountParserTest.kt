@@ -77,6 +77,23 @@ class AmountParserTest {
     }
 
     @Test
+    fun ungroupedThousandsAfterTheCurrencyAreReadWhole() {
+        // The grouped form matched its first three digits and stopped, so these read as
+        // USD 129.00, ₾150.00 and AED 123.00.
+        assertEquals(129900L to KCurrency.USD, AmountParser.parse("Payment USD 1299.00 at Apple"))
+        assertEquals(150000L to KCurrency.GEL, AmountParser.parse("Paid ₾1500 at IKEA"))
+        assertEquals(1234500L to KCurrency.AED, AmountParser.parse("Payment AED 12345 at Emaar"))
+    }
+
+    @Test
+    fun groupedAndSmallAmountsAfterTheCurrencyStillParse() {
+        assertEquals(129900L to KCurrency.USD, AmountParser.parse("Payment USD 1,299.00 at Apple"))
+        assertEquals(123456L to KCurrency.GEL, AmountParser.parse("GEL 1 234,56"))
+        assertEquals(1999L to KCurrency.USD, AmountParser.parse("Payment USD 19.99 at Steam"))
+        assertEquals(129900L to KCurrency.USD, AmountParser.parse("Charged 1299.00$ today"))
+    }
+
+    @Test
     fun unknownCurrencyCodeIsIgnored() {
         assertNull(AmountParser.parse("Payment 10.00 XYZ"))
     }
