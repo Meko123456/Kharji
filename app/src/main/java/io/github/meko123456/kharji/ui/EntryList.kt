@@ -81,7 +81,9 @@ fun EntryList(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        // 88dp at the bottom: the add button's 56 plus its margins. With 16, the button sat on the
+        // last expense's amount.
+        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
     ) {
         item(key = "summary") {
             Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
