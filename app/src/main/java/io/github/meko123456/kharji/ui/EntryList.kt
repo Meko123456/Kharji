@@ -122,7 +122,7 @@ fun EntryList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 3.dp)
-                        .combinedClickable(onClick = {}, onLongClick = { onDelete(entry) }),
+                        .combinedClickable(onClick = {}, onLongClick = { onDelete(entry) }, onLongClickLabel = "Delete"),
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),

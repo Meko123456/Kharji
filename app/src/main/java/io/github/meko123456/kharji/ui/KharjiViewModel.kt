@@ -101,6 +101,11 @@ class KharjiViewModel(private val dao: KharjiDao) : ViewModel() {
         viewModelScope.launch { dao.delete(entry) }
     }
 
+    /** Undo for [deleteEntry]: the same row, id included, goes back in. */
+    fun restoreEntry(entry: Entry) {
+        viewModelScope.launch { dao.insert(entry) }
+    }
+
     companion object {
         private val DEFAULT_CATEGORIES = listOf(
             Category(name = "Food", emoji = "🍔"),
