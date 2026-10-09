@@ -16,8 +16,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import io.github.meko123456.kharji.data.Category
 import io.github.meko123456.kharji.data.Entry
@@ -28,8 +30,6 @@ import io.github.meko123456.kharji.domain.KCurrency
 import io.github.meko123456.kharji.domain.Money
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
-private val DayFormat = DateTimeFormatter.ofPattern("EEE, d MMM")
 
 /**
  * Grand total of [totals] in GEL via cached [rates].
@@ -67,6 +67,10 @@ fun EntryList(
     modifier: Modifier = Modifier,
 ) {
     val categoryById = categories.associateBy { it.id }
+    // The day headings follow the app's language as it is now. A top-level formatter kept the
+    // language the process started in, so switching the app to Arabic left them in English.
+    val locale = LocalConfiguration.current.locales[0]
+    val dayFormat = remember(locale) { DateTimeFormatter.ofPattern("EEE, d MMM", locale) }
     val thisMonth = LocalDate.now().let { it.year to it.monthValue }
     val monthTotals = entries
         .filter { LocalDate.ofEpochDay(it.epochDay).let { d -> d.year to d.monthValue } == thisMonth }
@@ -106,7 +110,7 @@ fun EntryList(
         byDay.forEach { (epochDay, dayEntries) ->
             item(key = "day-$epochDay") {
                 Text(
-                    text = LocalDate.ofEpochDay(epochDay).format(DayFormat),
+                    text = LocalDate.ofEpochDay(epochDay).format(dayFormat),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
