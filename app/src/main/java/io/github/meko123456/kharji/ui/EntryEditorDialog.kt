@@ -14,7 +14,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,11 +30,11 @@ fun EntryEditorDialog(
     onSave: (amount: String, currency: KCurrency, categoryId: Long?, merchant: String?, note: String?) -> Boolean,
     onDismiss: () -> Unit,
 ) {
-    var amount by remember { mutableStateOf("") }
-    var currency by remember { mutableStateOf(KCurrency.GEL) }
-    var categoryId by remember { mutableStateOf<Long?>(null) }
-    var merchant by remember { mutableStateOf("") }
-    var amountError by remember { mutableStateOf(false) }
+    var amount by rememberSaveable { mutableStateOf("") }
+    var currency by rememberSaveable { mutableStateOf(KCurrency.GEL) }
+    var categoryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var merchant by rememberSaveable { mutableStateOf("") }
+    var amountError by rememberSaveable { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,

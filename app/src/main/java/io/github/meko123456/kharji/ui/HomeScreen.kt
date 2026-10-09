@@ -20,7 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,8 +36,8 @@ fun HomeScreen(viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.
     val pending by viewModel.pending.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val rates by viewModel.rates.collectAsState()
-    var showEditor by remember { mutableStateOf(false) }
-    var showScanner by remember { mutableStateOf(false) }
+    var showEditor by rememberSaveable { mutableStateOf(false) }
+    var showScanner by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
 
