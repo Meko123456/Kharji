@@ -2,6 +2,8 @@ package io.github.meko123456.kharji.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.horizontalScroll
@@ -24,6 +26,7 @@ import io.github.meko123456.kharji.data.Category
 import io.github.meko123456.kharji.domain.KCurrency
 
 /** Quick-add expense: amount, currency chips, category chips, optional merchant/note. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EntryEditorDialog(
     categories: List<Category>,
@@ -49,7 +52,9 @@ fun EntryEditorDialog(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 )
-                Row(
+                // Wraps rather than squeezing: in one row at 2x text on a 360dp phone, EUR was
+                // pressed into a sliver with one letter to a line and could not be picked.
+                FlowRow(
                     modifier = Modifier.padding(top = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
