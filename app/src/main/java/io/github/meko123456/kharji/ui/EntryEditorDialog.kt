@@ -16,10 +16,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import io.github.meko123456.kharji.data.Category
@@ -38,6 +43,12 @@ fun EntryEditorDialog(
     var categoryId by rememberSaveable { mutableStateOf<Long?>(null) }
     var merchant by rememberSaveable { mutableStateOf("") }
     var amountError by rememberSaveable { mutableStateOf(false) }
+    val save = {
+        val ok = onSave(amount, currency, categoryId, merchant, null)
+        if (!ok) amountError = true else onDismiss()
+    }
+    // The keyboard's action key goes from the amount to the merchant, past the chips, then saves.
+    val merchantFocus = remember { FocusRequester() }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -50,7 +61,8 @@ fun EntryEditorDialog(
                     label = { Text(if (amountError) "Enter a valid amount" else "Amount") },
                     isError = amountError,
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { merchantFocus.requestFocus() }),
                 )
                 // Wraps rather than squeezing: in one row at 2x text on a 360dp phone, EUR was
                 // pressed into a sliver with one letter to a line and could not be picked.
@@ -85,15 +97,14 @@ fun EntryEditorDialog(
                     onValueChange = { merchant = it },
                     label = { Text("Merchant / note (optional)") },
                     singleLine = true,
-                    modifier = Modifier.padding(top = 8.dp),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { save() }),
+                    modifier = Modifier.padding(top = 8.dp).focusRequester(merchantFocus),
                 )
             }
         },
         confirmButton = {
-            TextButton(onClick = {
-                val ok = onSave(amount, currency, categoryId, merchant, null)
-                if (!ok) amountError = true else onDismiss()
-            }) { Text("Save") }
+            TextButton(onClick = save) { Text("Save") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }
