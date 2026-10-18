@@ -12,6 +12,7 @@ import io.github.meko123456.kharji.data.EntrySource
 import io.github.meko123456.kharji.data.FxRate
 import io.github.meko123456.kharji.data.KharjiDao
 import io.github.meko123456.kharji.data.KharjiDatabase
+import io.github.meko123456.kharji.domain.AmountInput
 import io.github.meko123456.kharji.domain.KCurrency
 import io.github.meko123456.kharji.domain.Money
 import java.time.LocalDate
@@ -78,7 +79,8 @@ class KharjiViewModel(private val dao: KharjiDao) : ViewModel() {
         merchant: String?,
         note: String?,
     ): Boolean {
-        val money = runCatching { Money.of(amount, currency) }.getOrNull() ?: return false
+        val typed = AmountInput.normalize(amount) ?: return false
+        val money = runCatching { Money.of(typed, currency) }.getOrNull() ?: return false
         if (money.minor <= 0) return false
         viewModelScope.launch {
             dao.insert(
