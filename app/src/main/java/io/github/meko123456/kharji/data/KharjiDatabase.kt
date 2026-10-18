@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [Entry::class, Category::class, FxRate::class],
     version = 1,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class KharjiDatabase : RoomDatabase() {
 
