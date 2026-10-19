@@ -12,7 +12,7 @@ import java.io.File
 fun shareCsv(context: Context, entries: List<Entry>, categories: List<Category>) {
     val dir = File(context.cacheDir, "exports").apply { mkdirs() }
     val file = File(dir, "kharji-export.csv")
-    file.writeText(CsvExporter.toCsv(entries, categories))
+    file.writeText(CsvExporter.toFile(entries, categories))
 
     val uri = FileProvider.getUriForFile(
         context,

@@ -51,6 +51,14 @@ class CsvExporterTest {
     }
 
     @Test
+    fun `the file starts with a byte order mark so Excel reads Georgian as UTF-8`() {
+        val entries = listOf(entry(450, merchant = "ყავის სახლი", note = "საუზმე"))
+        val file = CsvExporter.toFile(entries, listOf(food))
+        assertEquals('\uFEFF', file.first())
+        assertEquals(CsvExporter.toCsv(entries, listOf(food)), file.drop(1))
+    }
+
+    @Test
     fun `amount formats minor units with two decimals`() {
         val csv = CsvExporter.toCsv(listOf(entry(5)), listOf(food))
         assert(csv.contains(",0.05,GEL,"))

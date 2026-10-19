@@ -31,6 +31,14 @@ object CsvExporter {
         }
     }
 
+    /**
+     * What the exported file holds: the CSV behind a UTF-8 byte-order mark. Excel opens a CSV
+     * without one in the system's ANSI code page, which turns every Georgian category, merchant
+     * and note into mojibake; with it, Excel reads the file as UTF-8. Google Sheets, Numbers and
+     * LibreOffice take the mark as what it is and drop it.
+     */
+    fun toFile(entries: List<Entry>, categories: List<Category>): String = "\uFEFF" + toCsv(entries, categories)
+
     /** Quote when the field contains comma, quote, or newline; double inner quotes. */
     internal fun escape(field: String): String =
         if (field.any { it == ',' || it == '"' || it == '\n' || it == '\r' }) {
