@@ -39,11 +39,21 @@ object CsvExporter {
      */
     fun toFile(entries: List<Entry>, categories: List<Category>): String = "\uFEFF" + toCsv(entries, categories)
 
-    /** Quote when the field contains comma, quote, or newline; double inner quotes. */
-    internal fun escape(field: String): String =
-        if (field.any { it == ',' || it == '"' || it == '\n' || it == '\r' }) {
-            "\"${field.replace("\"", "\"\"")}\""
+    /**
+     * Quote when the field contains comma, quote, or newline; double inner quotes.
+     *
+     * A field that opens with =, +, -, @, a tab or a carriage return is a formula to Excel and Sheets,
+     * and a merchant comes from a notification whose sender anyone can spoof: one captured "at =1+2"
+     * opened as 3. Such a field gets a leading ', which both read as "this is text".
+     */
+    internal fun escape(field: String): String {
+        val text = if (field.firstOrNull() in formulaStarts) "'$field" else field
+        return if (text.any { it == ',' || it == '"' || it == '\n' || it == '\r' }) {
+            "\"${text.replace("\"", "\"\"")}\""
         } else {
-            field
+            text
         }
+    }
+
+    private val formulaStarts = setOf('=', '+', '-', '@', '\t', '\r')
 }

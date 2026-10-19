@@ -42,6 +42,16 @@ class CsvExporterTest {
     }
 
     @Test
+    fun `a field a spreadsheet would run as a formula stays text`() {
+        assertEquals("'=1+2", CsvExporter.escape("=1+2"))
+        assertEquals("'+995 555 12 34 56", CsvExporter.escape("+995 555 12 34 56"))
+        assertEquals("'@SUM(A1:A9)", CsvExporter.escape("@SUM(A1:A9)"))
+        assertEquals("\"'=HYPERLINK(\"\"http://x\"\",\"\"pay\"\")\"", CsvExporter.escape("=HYPERLINK(\"http://x\",\"pay\")"))
+        // Only the start counts.
+        assertEquals("1+2=3", CsvExporter.escape("1+2=3"))
+    }
+
+    @Test
     fun `exports header plus one row per entry`() {
         val csv = CsvExporter.toCsv(listOf(entry(1250, merchant = "Spar, Vake")), listOf(food))
         val lines = csv.trim().lines()
