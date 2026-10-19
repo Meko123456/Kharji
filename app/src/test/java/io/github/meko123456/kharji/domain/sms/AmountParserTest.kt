@@ -34,6 +34,12 @@ class AmountParserTest {
     fun groupedThousandsWithoutDecimals() = assertEquals(123400L, AmountParser.toMinor("1,234"))
 
     @Test
+    fun noBreakSpacesGroupThousandsToo() {
+        assertEquals(123456L, AmountParser.toMinor("1\u00A0234,56"))
+        assertEquals(123456L, AmountParser.toMinor("1\u202F234,56"))
+    }
+
+    @Test
     fun rejectsNonNumeric() {
         assertNull(AmountParser.toMinor(""))
         assertNull(AmountParser.toMinor("abc"))
@@ -91,6 +97,17 @@ class AmountParserTest {
         assertEquals(123456L to KCurrency.GEL, AmountParser.parse("GEL 1 234,56"))
         assertEquals(1999L to KCurrency.USD, AmountParser.parse("Payment USD 19.99 at Steam"))
         assertEquals(129900L to KCurrency.USD, AmountParser.parse("Charged 1299.00$ today"))
+    }
+
+    @Test
+    fun noBreakSpacesInAFormattedAmountAreReadAsSpaces() {
+        // A bank app that formats amounts in the phone's language writes Georgian and Russian ones
+        // with U+00A0 between the thousands, and French-style ones with U+202F. Before, the first of
+        // these wasn't read at all, the second and the last read 234.56, and the third read 1.00.
+        assertEquals(123456L to KCurrency.GEL, AmountParser.parse("Purchase 1\u00A0234,56\u00A0GEL at SPAR"))
+        assertEquals(123456L to KCurrency.GEL, AmountParser.parse("Purchase 1\u00A0234,56 GEL at SPAR"))
+        assertEquals(123456L to KCurrency.GEL, AmountParser.parse("Payment GEL 1\u202F234,56"))
+        assertEquals(123456L to KCurrency.GEL, AmountParser.parse("გადახდა 1\u00A0234,56 ₾"))
     }
 
     @Test

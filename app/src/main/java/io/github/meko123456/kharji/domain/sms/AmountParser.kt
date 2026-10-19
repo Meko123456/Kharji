@@ -38,18 +38,28 @@ object AmountParser {
     // "12.50₾"
     private val amountThenSymbol = Regex("$NUMBER\\s*([₾$€]|د\\.إ)")
 
+    /**
+     * Spaces a formatted amount carries besides the space bar's: no-break (U+00A0, between the
+     * thousands in Georgian and Russian), figure, thin and narrow no-break (U+202F, French). A bank
+     * app that formats with the phone's language writes them, and none of them is `\s` or `' '`:
+     * "1 234,56 GEL" with no-break spaces wasn't read at all, and with one only between the
+     * thousands it read 234.56.
+     */
+    private val otherSpaces = Regex("[\u00A0\u2007\u2009\u202F]")
+
     /** Returns the first amount+currency found, or null if the text has none. */
     fun parse(text: String): Pair<Long, KCurrency>? {
-        amountThenCode.find(text)?.let { m ->
+        val plain = text.replace(otherSpaces, " ")
+        amountThenCode.find(plain)?.let { m ->
             codes[m.groupValues[2]]?.let { c -> toMinor(m.groupValues[1])?.let { return it to c } }
         }
-        codeThenAmount.find(text)?.let { m ->
+        codeThenAmount.find(plain)?.let { m ->
             codes[m.groupValues[1]]?.let { c -> toMinor(m.groupValues[2])?.let { return it to c } }
         }
-        symbolThenAmount.find(text)?.let { m ->
+        symbolThenAmount.find(plain)?.let { m ->
             symbols[m.groupValues[1]]?.let { c -> toMinor(m.groupValues[2])?.let { return it to c } }
         }
-        amountThenSymbol.find(text)?.let { m ->
+        amountThenSymbol.find(plain)?.let { m ->
             symbols[m.groupValues[2]]?.let { c -> toMinor(m.groupValues[1])?.let { return it to c } }
         }
         return null
@@ -61,7 +71,7 @@ object AmountParser {
      * separator is a thousands grouping and is stripped.
      */
     fun toMinor(raw: String): Long? {
-        val cleaned = raw.trim().replace(" ", "")
+        val cleaned = raw.trim().replace(otherSpaces, "").replace(" ", "")
         if (cleaned.isEmpty()) return null
 
         val lastDot = cleaned.lastIndexOf('.')
