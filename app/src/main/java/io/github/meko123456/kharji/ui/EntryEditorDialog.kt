@@ -37,11 +37,14 @@ fun EntryEditorDialog(
     categories: List<Category>,
     onSave: (amount: String, currency: KCurrency, categoryId: Long?, merchant: String?, note: String?) -> Boolean,
     onDismiss: () -> Unit,
+    initialAmount: String = "",
+    initialCurrency: KCurrency = KCurrency.GEL,
+    initialMerchant: String = "",
 ) {
-    var amount by rememberSaveable { mutableStateOf("") }
-    var currency by rememberSaveable { mutableStateOf(KCurrency.GEL) }
+    var amount by rememberSaveable { mutableStateOf(initialAmount) }
+    var currency by rememberSaveable { mutableStateOf(initialCurrency) }
     var categoryId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var merchant by rememberSaveable { mutableStateOf("") }
+    var merchant by rememberSaveable { mutableStateOf(initialMerchant) }
     var amountError by rememberSaveable { mutableStateOf(false) }
     val save = {
         val ok = onSave(amount, currency, categoryId, merchant, null)
