@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.meko123456.kharji.domain.ExpenseFromText
@@ -82,7 +83,14 @@ fun HomeScreen(
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(
-                title = { Text("Kharji 💸") },
+                // Read as the app's name and as the screen's heading. TalkBack read the emoji too:
+                // "Kharji, money with wings".
+                title = {
+                    Text(
+                        "Kharji 💸",
+                        modifier = Modifier.clearAndSetSemantics { contentDescription = "Kharji"; heading() },
+                    )
+                },
                 actions = {
                     IconButton(onClick = { showScanner = true }) {
                         Text(
