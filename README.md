@@ -42,6 +42,10 @@ mainstream tracker fits. Kharji does three things most don't:
 ## Shipped since
 
 - Receipt scanning (CameraX + on-device ML Kit text recognition), with a pure `ReceiptParser` covered by 12 tests
+- Expenses from other apps: select an amount anywhere and pick *Kharji* in the selection menu (or
+  share it) and the new-expense dialog opens with the amount and currency filled in; other text
+  goes in as the merchant
+- Launcher shortcuts: long-press the icon for *Add an expense* (number keyboard up) or *Scan a receipt*
 - More bank SMS fixtures as real formats are collected (parsers are pattern-based and
   easy to extend)
 
