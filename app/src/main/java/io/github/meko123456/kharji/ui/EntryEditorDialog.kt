@@ -14,6 +14,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,7 @@ fun EntryEditorDialog(
     }
     // The keyboard's action key goes from the amount to the merchant, past the chips, then saves.
     val merchantFocus = remember { FocusRequester() }
+    val amountFocus = remember { FocusRequester() }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -66,6 +68,7 @@ fun EntryEditorDialog(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { merchantFocus.requestFocus() }),
+                    modifier = Modifier.focusRequester(amountFocus),
                 )
                 // Wraps rather than squeezing: in one row at 2x text on a 360dp phone, EUR was
                 // pressed into a sliver with one letter to a line and could not be picked.
@@ -105,6 +108,9 @@ fun EntryEditorDialog(
                     modifier = Modifier.padding(top = 8.dp).focusRequester(merchantFocus),
                 )
             }
+            // With no amount yet (+, the Add an expense shortcut, a merchant picked out of another
+            // app), the amount is the next thing to type, so it has the number keyboard at once.
+            LaunchedEffect(Unit) { if (initialAmount.isEmpty()) amountFocus.requestFocus() }
         },
         confirmButton = {
             TextButton(onClick = save) { Text("Save") }
