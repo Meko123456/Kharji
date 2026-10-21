@@ -21,9 +21,16 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!--
+          singleTop, so text shared to Kharji while it is already open reaches onNewIntent. Without
+          it, a share started as a new task (from a notification, a widget, a service) found
+          Kharji's task, brought it forward and dropped the text: "intent has been delivered to
+          currently running top-most instance", and the editor kept the earlier amount.
+        -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
