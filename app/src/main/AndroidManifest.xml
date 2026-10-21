@@ -35,6 +35,9 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
             <!-- An amount picked out in any app ("Kharji" in the selection menu), or shared to
                  Kharji, opens a new expense with it filled in. -->
             <intent-filter>

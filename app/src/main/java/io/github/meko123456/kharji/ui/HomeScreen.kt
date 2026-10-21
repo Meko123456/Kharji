@@ -48,6 +48,8 @@ fun HomeScreen(
     viewModel: KharjiViewModel = viewModel(factory = KharjiViewModel.Factory),
     fromText: ExpenseFromText? = null,
     onFromTextOpened: () -> Unit = {},
+    openScanner: Boolean = false,
+    onScannerOpened: () -> Unit = {},
 ) {
     val entries by viewModel.entries.collectAsState()
     val pending by viewModel.pending.collectAsState()
@@ -71,6 +73,13 @@ fun HomeScreen(
             showScanner = false
             showEditor = true
             onFromTextOpened()
+        }
+    }
+    LaunchedEffect(openScanner) {
+        if (openScanner) {
+            showEditor = false
+            showScanner = true
+            onScannerOpened()
         }
     }
 

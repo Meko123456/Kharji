@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long-press Kharji's icon: the two ways an expense starts, without going through the app first. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_expense"
+        android:icon="@drawable/ic_shortcut_add"
+        android:shortcutShortLabel="@string/shortcut_add_expense_short"
+        android:shortcutLongLabel="@string/shortcut_add_expense_long">
+        <intent
+            android:action="io.github.meko123456.kharji.action.ADD_EXPENSE"
+            android:targetClass="io.github.meko123456.kharji.MainActivity"
+            android:targetPackage="io.github.meko123456.kharji" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="scan_receipt"
+        android:icon="@drawable/ic_shortcut_scan"
+        android:shortcutShortLabel="@string/shortcut_scan_receipt_short"
+        android:shortcutLongLabel="@string/shortcut_scan_receipt_long">
+        <intent
+            android:action="io.github.meko123456.kharji.action.SCAN_RECEIPT"
+            android:targetClass="io.github.meko123456.kharji.MainActivity"
+            android:targetPackage="io.github.meko123456.kharji" />
+    </shortcut>
+</shortcuts>
