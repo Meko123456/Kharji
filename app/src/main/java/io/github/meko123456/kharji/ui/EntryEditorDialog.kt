@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
@@ -28,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import io.github.meko123456.kharji.data.Category
 import io.github.meko123456.kharji.domain.KCurrency
 
@@ -57,9 +60,14 @@ fun EntryEditorDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        // Edge to edge, inside the system bars and above the keyboard. With the number keyboard up
+        // the dialog was too tall to show whole: it panned to the amount and left Save under the
+        // keyboard. Now the fields scroll inside it and Save stays in view.
+        properties = DialogProperties(decorFitsSystemWindows = false),
+        modifier = Modifier.safeDrawingPadding(),
         title = { Text("New expense") },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 OutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it; amountError = false },
