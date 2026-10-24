@@ -1,7 +1,12 @@
 package io.github.meko123456.kharji.ui
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -24,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -40,7 +46,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
@@ -62,11 +70,13 @@ fun ReceiptScannerScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    var hasPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
-                PackageManager.PERMISSION_GRANTED,
-        )
+    val activity = LocalActivity.current
+    var hasPermission by remember { mutableStateOf(cameraAllowed(context)) }
+    // Read again on every resume. A camera allowed in the phone's settings after "Don't allow"
+    // never comes back through the launcher, so the scanner stayed blank until it was reopened.
+    LifecycleResumeEffect(Unit) {
+        hasPermission = cameraAllowed(context)
+        onPauseOrDispose {}
     }
     var status by remember { mutableStateOf<String?>(null) }
     val imageCapture = remember { ImageCapture.Builder().build() }
@@ -154,11 +164,23 @@ fun ReceiptScannerScreen(
                     // Binding lives in the DisposableEffect above, so it has somewhere to be undone.
                     AndroidView(modifier = Modifier.fillMaxSize(), factory = { previewView })
                 } else {
-                    Text(
-                        "Camera permission is needed to scan receipts.",
-                        style = MaterialTheme.typography.bodyMedium,
+                    Column(
                         modifier = Modifier.align(Alignment.Center).padding(24.dp),
-                    )
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text("Camera permission is needed to scan receipts.", style = MaterialTheme.typography.bodyMedium)
+                        // Android shows its prompt again only while it says a reason may still help;
+                        // after a second "Don't allow" the only way left is the app's settings page.
+                        TextButton(onClick = {
+                            if (activity != null && ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA)) {
+                                permissionLauncher.launch(Manifest.permission.CAMERA)
+                            } else {
+                                context.startActivity(
+                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)),
+                                )
+                            }
+                        }) { Text("Allow camera") }
+                    }
                 }
             }
 
@@ -220,3 +242,6 @@ private fun recognize(recognizer: TextRecognizer, image: ImageProxy, onLines: (L
         .addOnFailureListener { onLines(emptyList()) }
         .addOnCompleteListener { image.close() }
 }
+
+private fun cameraAllowed(context: Context): Boolean =
+    ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
