@@ -37,7 +37,10 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.meko123456.kharji.data.sms.BankNotificationListener
 import io.github.meko123456.kharji.domain.ExpenseFromText
 import io.github.meko123456.kharji.domain.KCurrency
 import kotlinx.coroutines.launch
@@ -84,6 +87,13 @@ fun HomeScreen(
     }
 
     val context = LocalContext.current
+    // Whether bank capture is on, read again on every resume: it is switched in Android's
+    // settings, never in the app, so the button can only say what it finds when the user is back.
+    var captureOn by remember { mutableStateOf(bankCaptureOn(context)) }
+    LifecycleResumeEffect(Unit) {
+        captureOn = bankCaptureOn(context)
+        onPauseOrDispose {}
+    }
 
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -108,16 +118,15 @@ fun HomeScreen(
                             modifier = Modifier.clearAndSetSemantics { contentDescription = "Scan receipt" },
                         )
                     }
-                    // Opens system settings so the user can opt in to bank-notification capture.
-                    IconButton(onClick = {
-                        context.startActivity(
-                            android.content.Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"),
-                        )
-                    }) {
+                    // Opens Android's notification-access switch for Kharji, where bank capture is
+                    // turned on and off.
+                    IconButton(onClick = { openBankCaptureSettings(context) }) {
                         Text(
                             "📥",
                             style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.clearAndSetSemantics { contentDescription = "Bank capture settings" },
+                            modifier = Modifier.clearAndSetSemantics {
+                                contentDescription = if (captureOn) "Bank capture is on" else "Bank capture is off"
+                            },
                         )
                     }
                     if (entries.isNotEmpty()) {
@@ -201,4 +210,23 @@ fun HomeScreen(
             onBack = { showScanner = false },
         )
     }
+}
+
+private fun bankCaptureOn(context: android.content.Context): Boolean =
+    context.packageName in NotificationManagerCompat.getEnabledListenerPackages(context)
+
+/**
+ * Straight to Kharji's own notification-access switch on Android 11 and later. The list of every
+ * app that can read notifications, which it used to open, is the fallback for older versions and
+ * for a phone whose settings have no such page.
+ */
+private fun openBankCaptureSettings(context: android.content.Context) {
+    val list = android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+        val listener = android.content.ComponentName(context, BankNotificationListener::class.java)
+        val detail = android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS)
+            .putExtra(android.provider.Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME, listener.flattenToString())
+        if (runCatching { context.startActivity(detail) }.isSuccess) return
+    }
+    context.startActivity(list)
 }
