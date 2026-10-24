@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon layer: the coin with a groove inside its rim and its centre bar half-tone. With the
+     bar simply cut out, one tone made the coin read as a "no entry" sign. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M54,54m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0 M54,54m-20.5,0a20.5,20.5 0,1 1,41 0a20.5,20.5 0,1 1,-41 0 M54,54m-18.5,0a18.5,18.5 0,1 1,37 0a18.5,18.5 0,1 1,-37 0 M42,50h24v8h-24z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.45"
+        android:pathData="M42,50h24v8h-24z" />
+</vector>
