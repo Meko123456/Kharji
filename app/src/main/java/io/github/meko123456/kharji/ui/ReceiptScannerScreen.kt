@@ -16,11 +16,11 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,8 +41,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -187,9 +191,8 @@ fun ReceiptScannerScreen(
             Column(
                 Modifier.fillMaxWidth().padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                status?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                ScanStatus(status)
                 Button(
                     enabled = hasPermission,
                     onClick = {
@@ -218,6 +221,28 @@ fun ReceiptScannerScreen(
             }
         }
     }
+}
+
+/** The scanner's status line, for tests. */
+internal const val SCAN_STATUS_TAG = "scan-status"
+
+/**
+ * What the scanner is doing: "Reading receipt…", then why it couldn't read one. A polite live
+ * region, so TalkBack reads each step where the user is, on the Capture button; a failure is how
+ * they learn to try again. It is always composed, empty and with no height while there's nothing
+ * to say, so each step changes the words of one node: a node that newly appears isn't announced.
+ * The 8 dp above the Capture button come with the words, so the idle layout is as it was.
+ */
+@Composable
+internal fun ScanStatus(status: String?) {
+    Text(
+        status.orEmpty(),
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier
+            .testTag(SCAN_STATUS_TAG)
+            .semantics { liveRegion = LiveRegionMode.Polite }
+            .then(if (status == null) Modifier.height(0.dp) else Modifier.padding(bottom = 8.dp)),
+    )
 }
 
 /**

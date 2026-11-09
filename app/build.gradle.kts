@@ -35,6 +35,17 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // Robolectric runs the Compose UI tests on the JVM, in the unit test task CI already runs,
+    // and needs the app's resources and manifest to start an activity.
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    // Robolectric sets up file descriptors through jdk.internal.access, which JDK 21 doesn't export.
+    jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED")
 }
 
 // Room writes each version's schema here so a future migration can be written against the real
@@ -70,4 +81,10 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
 
     testImplementation(libs.junit)
+    // Compose UI tests under Robolectric: what TalkBack is told, which a plain JVM test can't see.
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.ext.junit)
+    debugImplementation(libs.compose.ui.test.manifest)
 }
